@@ -3,19 +3,41 @@ set -e
 
 # ========================
 # LibreSpeed CLI Speedtest
+# 自动检测 CPU 架构并下载对应版本
 # ========================
 
-# 配置
-REPO_URL="https://github.com/librespeed/speedtest-cli/releases/download/v1.0.12"
-TAR_NAME="librespeed-cli_1.0.12_linux_armv6.tar.gz"
+# 仓库地址
+BASE_URL="https://github.com/librespeed/speedtest-cli/releases/download/v1.0.12"
+
+# 自动检测架构
+ARCH=$(uname -m)
+case "$ARCH" in
+  armv6*|armv7*|armhf)
+    TAR_NAME="librespeed-cli_1.0.12_linux_armv6.tar.gz"
+    ;;
+  aarch64)
+    # 没有单独的 aarch64 包，暂时用 amd64 包可能会失败
+    TAR_NAME="librespeed-cli_1.0.12_linux_amd64.tar.gz"
+    ;;
+  x86_64|amd64)
+    TAR_NAME="librespeed-cli_1.0.12_linux_amd64.tar.gz"
+    ;;
+  *)
+    echo "[ERROR] 未知架构: $ARCH"
+    echo "请手动指定 arm 或 amd"
+    exit 1
+    ;;
+esac
+
 BIN_NAME="librespeed-cli"
 SERVER_JSON="servers.json"
 LOG_FILE="speedtest.log"
 
 # 1. 下载并解压 librespeed-cli
 if [ ! -f "$BIN_NAME" ]; then
-  echo "[INFO] 下载 librespeed-cli..."
-  wget -q -O "$TAR_NAME" "$REPO_URL/$TAR_NAME"
+  echo "[INFO] 检测到架构: $ARCH"
+  echo "[INFO] 下载 $TAR_NAME ..."
+  wget -q -O "$TAR_NAME" "$BASE_URL/$TAR_NAME"
   tar -xzf "$TAR_NAME"
   rm -f "$TAR_NAME"
 fi
