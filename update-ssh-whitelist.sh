@@ -38,3 +38,22 @@ iptables -D INPUT -p tcp --dport $PORT -j SSH_RULES 2>/dev/null
 ip6tables -D INPUT -p tcp --dport $PORT -j SSH_RULES 2>/dev/null
 iptables -I INPUT -p tcp --dport $PORT -j SSH_RULES
 ip6tables -I INPUT -p tcp --dport $PORT -j SSH_RULES
+
+# 检查并安装 iptables-persistent（Debian/Ubuntu）
+if ! command -v netfilter-persistent >/dev/null 2>&1; then
+  if [ -f /etc/debian_version ]; then
+    echo "未检测到 iptables-persistent，正在安装..."
+    apt update && apt install -y iptables-persistent
+  fi
+fi
+
+# 保存规则
+if command -v netfilter-persistent >/dev/null 2>&1; then
+  netfilter-persistent save
+  echo "✅ 规则已保存到 netfilter-persistent"
+elif command -v service >/dev/null 2>&1 && [ -f /etc/init.d/iptables ]; then
+  service iptables save
+  echo "✅ 规则已保存到 /etc/init.d/iptables"
+else
+  echo "⚠️ 未检测到规则保存工具，规则只在当前会话生效（重启后会丢失）"
+fi
