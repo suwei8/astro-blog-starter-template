@@ -2,7 +2,7 @@
 PORT=22
 DOMAINS=(
   ssh-mobile-v4.555606.xyz
-  ssh-mobile-v6.555606.xyz
+  wky.555606.xyz
   ssh-vps-v4.555606.xyz
   ssh-vps-v6.555606.xyz
 )
